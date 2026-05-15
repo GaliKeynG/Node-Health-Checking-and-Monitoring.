@@ -1,0 +1,23 @@
+# python stuff
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+
+# logs generated when running
+monitor.log
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# os
+.DS_Store
+Thumbs.db
