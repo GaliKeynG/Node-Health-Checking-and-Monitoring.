@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Node Health Monitor</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-box {
+            background: white;
+            padding: 16px 24px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            min-width: 120px;
+        }
+        .stat-box .num {
+            font-size: 30px;
+            font-weight: bold;
+        }
+        .stat-box .label {
+            color: #777;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        th {
+            background: #34495e;
+            color: white;
+            font-weight: normal;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        tr:hover { background: #fafafa; }
+        .alive {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .dead {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .bar-wrap {
+            display: inline-block;
+            background: #e0e0e0;
+            width: 100px;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        .bar-fill {
+            background: #4caf50;
+            height: 100%;
+            transition: width 0.4s;
+        }
+        .bar-fill.warn { background: #ff9800; }
+        .bar-fill.crit { background: #f44336; }
+        .logs {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 14px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .logs div { margin: 2px 0; }
+        .refresh-info {
+            color: #999;
+            font-size: 12px;
+            text-align: right;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Node Health Monitor</h1>
+    <div class="subtitle">Distributed System course project - live status of all worker nodes</div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="num" id="total">0</div>
+            <div class="label">Total Nodes</div>
+        </div>
+        <div class="stat-box">
+            <div class="num" style="color:#27ae60" id="alive">0</div>
+            <div class="label">Alive</div>
+        </div>
+        <div class="stat-box">
+            <div class="num" style="color:#e74c3c" id="dead">0</div>
+            <div class="label">Dead</div>
+        </div>
+    </div>
+
+    <div class="refresh-info">auto-refresh every 2s</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Node ID</th>
+                <th>IP</th>
+                <th>Status</th>
+                <th>CPU</th>
+                <th>Memory</th>
+                <th>Disk</th>
+                <th>Last Seen</th>
+                <th>Uptime</th>
+            </tr>
+        </thead>
+        <tbody id="tbody">
+            <tr><td colspan="8" style="text-align:center;color:#999">no nodes yet, start some with python node.py</td></tr>
+        </tbody>
+    </table>
+
+    <h3 style="color:#2c3e50">Event Log</h3>
+    <div class="logs" id="logs">loading...</div>
+
+<script>
+function makeBar(val) {
+    var v = parseFloat(val);
+    var c = '';
+    if (v > 80) c = 'crit';
+    else if (v > 60) c = 'warn';
+    return '<span class="bar-wrap"><span class="bar-fill ' + c + '" style="width:' + v + '%"></span></span>' + v.toFixed(1) + '%';
+}
+
+function fmtUptime(sec) {
+    if (sec < 60) return sec + 's';
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    if (m < 60) return m + 'm ' + s + 's';
+    var h = Math.floor(m / 60);
+    return h + 'h ' + (m % 60) + 'm';
+}
+
+async function refresh() {
+    try {
+        // stats
+        var stats = await fetch('/api/stats').then(function(r){return r.json();});
+        document.getElementById('total').innerText = stats.total;
+        document.getElementById('alive').innerText = stats.alive;
+        document.getElementById('dead').innerText = stats.dead;
+
+        // nodes
+        var nodes = await fetch('/api/nodes').then(function(r){return r.json();});
+        var html = '';
+        if (nodes.length == 0) {
+            html = '<tr><td colspan="8" style="text-align:center;color:#999">no nodes yet, start some with python node.py</td></tr>';
+        } else {
+            for (var i = 0; i < nodes.length; i++) {
+                var n = nodes[i];
+                var statusClass = (n.status === 'ALIVE') ? 'alive' : 'dead';
+                html += '<tr>';
+                html += '<td><b>' + n.node_id + '</b></td>';
+                html += '<td>' + n.ip + '</td>';
+                html += '<td class="' + statusClass + '">' + n.status + '</td>';
+                html += '<td>' + makeBar(n.cpu) + '</td>';
+                html += '<td>' + makeBar(n.memory) + '</td>';
+                html += '<td>' + makeBar(n.disk) + '</td>';
+                html += '<td>' + n.last_seen_ago + 's ago</td>';
+                html += '<td>' + fmtUptime(n.uptime) + '</td>';
+                html += '</tr>';
+            }
+        }
+        document.getElementById('tbody').innerHTML = html;
+
+        // logs
+        var logs = await fetch('/api/logs').then(function(r){return r.json();});
+        var lhtml = '';
+        for (var j = 0; j < logs.logs.length; j++) {
+            lhtml += '<div>' + logs.logs[j].replace(/\n/g, '') + '</div>';
+        }
+        if (lhtml == '') lhtml = '<div style="color:#888">no logs yet...</div>';
+        document.getElementById('logs').innerHTML = lhtml;
+    } catch (err) {
+        console.log('refresh error', err);
+    }
+}
+
+setInterval(refresh, 2000);
+refresh();
+</script>
+</body>
+</html>
