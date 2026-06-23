@@ -52,9 +52,9 @@ The idea is simple. A crashed node cannot send a message to say it crashed. So t
 |Step|What happens|
 |-|-|
 |1|Each node sends a heartbeat every 5 seconds.|
-|2|The monitor records the time it last heard from each node (`last\\\_seen`).|
+|2|The monitor records the time it last heard from each node (`last_seen`).|
 |3|A background thread checks every 3 seconds.|
-|4|If `now − last\\\_seen > 15s`, the node becomes **DEAD**.|
+|4|If `now − last_seen > 15s`, the node becomes **DEAD**.|
 |5|If a dead node sends a heartbeat again, it goes back to **ALIVE** automatically.|
 
 The 15-second timeout is about three missed heartbeats. It gives a small safety margin, so a normal network delay does not mark a node dead by mistake.
@@ -68,7 +68,7 @@ The 15-second timeout is about three missed heartbeats. It gives a small safety 
 |`templates/dashboard.html`|The web dashboard page.|
 |`requirements.txt`|Python libraries needed.|
 |`architecture.png`|The architecture diagram.|
-|`failure\\\_detection\\\_workflow.png`|The failure detection workflow diagram.|
+|`failure_detection_workflow.png`|The failure detection workflow diagram.|
 |`monitor.log`|Created when running, stores events.|
 
 ## How to run
