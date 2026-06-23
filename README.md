@@ -10,7 +10,7 @@ A simple distributed monitoring system. There is one **Monitor** server and many
 
 ## Architecture
 
-!\[System Architecture](architecture.png)
+![System Architecture](architecture.png)
 
 The system has three kinds of parts: many **Worker Nodes**, one **Monitor Server**, and a **Web Dashboard**.
 
