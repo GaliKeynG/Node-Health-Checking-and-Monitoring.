@@ -45,7 +45,7 @@ The heartbeat is JSON, sent over UDP:
 
 This is the most important part of the project. The picture below shows what happens when a node crashes and then comes back.
 
-!\[Failure Detection Workflow](failure\_detection\_workflow.png)
+![Failure Detection Workflow](failure\_detection\_workflow.png)
 
 The idea is simple. A crashed node cannot send a message to say it crashed. So the monitor does not wait for one. It just notices that the heartbeats stopped.
 
