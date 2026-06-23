@@ -18,7 +18,7 @@ Each worker node reads its own CPU, memory and disk usage with `psutil`, puts it
 
 The monitor runs three things at the same time (three threads):
 
-* **Heartbeat Receiver** — listens on UDP port `9999`. When a heartbeat arrives, it saves the node's info into a shared dictionary called `nodes`, and updates the node's `last\\\_seen` time to now.
+* **Heartbeat Receiver** — listens on UDP port `9999`. When a heartbeat arrives, it saves the node's info into a shared dictionary called `nodes`, and updates the node's `last_seen` time to now.
 * **Failure Detector** — wakes up every 3 seconds and checks every node. If a node has not sent a heartbeat for more than **15 seconds**, it marks that node as `DEAD`.
 * **Flask Web Server** — runs on port `8080` and serves the dashboard plus a few API routes (`/api/nodes`, `/api/stats`, `/api/logs`).
 
