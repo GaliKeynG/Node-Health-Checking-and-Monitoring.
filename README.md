@@ -32,7 +32,7 @@ The heartbeat is JSON, sent over UDP:
 
 ```json
 {
-  "node\\\_id": "node-1",
+  "node_id": "node-1",
   "cpu": 25.3,
   "memory": 41.2,
   "disk": 60.1,
